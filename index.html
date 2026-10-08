@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buy $ZTO</title>
+<meta name="description" content="Zero To One. The first swarm-made coin on Ethereum. Press play to buy it right here.">
+<link rel="icon" href="logo.png" type="image/png">
+
+<!-- X "player" card: the post renders this very page inside the timeline. -->
+<meta name="twitter:card" content="player">
+<meta name="twitter:site" content="@ZTO_ETH">
+<meta name="twitter:title" content="Buy $ZTO without leaving this post">
+<meta name="twitter:description" content="Zero To One. The first swarm-made coin on Ethereum. Press play.">
+<meta name="twitter:image" content="https://inverted0888.github.io/zto/card.png">
+<meta name="twitter:player" content="https://inverted0888.github.io/zto/">
+<meta name="twitter:player:width" content="480">
+<meta name="twitter:player:height" content="560">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Zero To One">
+<meta property="og:title" content="Buy $ZTO">
+<meta property="og:description" content="Zero To One. The first swarm-made coin on Ethereum. Press play to buy it right here.">
+<meta property="og:url" content="https://inverted0888.github.io/zto/">
+<meta property="og:image" content="https://inverted0888.github.io/zto/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<style>
+  :root {
+    --char: #15100c; --char-2: #1f1813; --line: #35291f;
+    --chalk: #efe6d6; --chalk-dim: #b9aa90; --amber: #f5a623; --amber-hi: #ffc55c;
+    --moss: #a5d78a; --red: #e86a5a;
+    --mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--char); color: var(--chalk); font: 13px/1.4 var(--mono);
+    display: flex; align-items: flex-start; justify-content: center;
+    background-image: radial-gradient(ellipse at 50% -10%, #2a1f14 0%, var(--char) 55%);
+  }
+  .swap { width: 100%; max-width: 480px; min-height: 100vh; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+  body.framed .swap { min-height: 100vh; }
+  body:not(.framed) .swap { min-height: 0; margin: 6vh auto; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.25); }
+
+  header { display: flex; align-items: center; gap: 10px; }
+  header img { width: 38px; height: 38px; border-radius: 9px; background: #000; }
+  header .name { font-weight: 700; letter-spacing: .04em; }
+  header .name small { color: var(--chalk-dim); font-weight: 400; margin-left: 6px; }
+  header .px { margin-left: auto; text-align: right; white-space: nowrap; }
+  header .px b { color: var(--amber-hi); font-weight: 700; }
+  header .px span { display: block; color: var(--chalk-dim); font-size: 11px; }
+  .up { color: var(--moss); } .down { color: var(--red); }
+
+  .field { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--char-2); }
+  .meta { display: flex; justify-content: space-between; color: var(--chalk-dim); font-size: 11px; letter-spacing: .06em; }
+  .meta button { background: none; border: 0; color: var(--amber); font: inherit; cursor: pointer; padding: 0 0 0 6px; }
+  .row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .row input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--chalk); font: 26px/1.2 var(--mono); padding: 0; }
+  .row input::placeholder { color: #5a4a3a; }
+  .row .out { flex: 1; font: 26px/1.2 var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .out.empty { color: #5a4a3a; }
+  .tok { display: flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: #000; font-weight: 700; white-space: nowrap; }
+  .tok img { width: 16px; height: 16px; border-radius: 50%; }
+  .seg { display: flex; gap: 6px; margin-top: 8px; }
+  .seg button { flex: 1; background: none; border: 1px solid var(--line); color: var(--chalk-dim); border-radius: 8px; padding: 5px 0; font: 12px var(--mono); cursor: pointer; }
+  .seg button.on, .seg button:hover { border-color: var(--amber); color: var(--amber-hi); }
+
+  .details { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; column-gap: 12px; color: var(--chalk-dim); font-size: 11.5px; padding: 0 4px; }
+  .details div:nth-child(even) { text-align: right; color: var(--chalk); white-space: nowrap; }
+  .details .slip { display: inline-flex; gap: 4px; }
+  .details .slip button { background: none; border: 1px solid var(--line); color: var(--chalk-dim); border-radius: 6px; padding: 1px 6px; font: 11px var(--mono); cursor: pointer; }
+  .details .slip button.on { border-color: var(--amber); color: var(--amber-hi); }
+
+  .go { margin-top: auto; width: 100%; border: 0; border-radius: 12px; padding: 14px; font: 700 15px/1 var(--mono); letter-spacing: .08em; cursor: pointer; background: var(--amber); color: #000; }
+  .go:disabled { background: #3a2d1f; color: #8d7a63; cursor: default; }
+  .go.ghost { background: none; border: 1px solid var(--amber); color: var(--amber-hi); }
+
+  .status { min-height: 18px; font-size: 11.5px; color: var(--chalk-dim); text-align: center; word-break: break-word; }
+  .status a { color: var(--amber-hi); }
+  .status.err { color: var(--red); }
+  .status.ok { color: var(--moss); }
+
+  .wallets { display: none; flex-direction: column; gap: 6px; }
+  .wallets.open { display: flex; }
+  .wallets button, .wallets a { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--char-2); color: var(--chalk); border-radius: 10px; padding: 9px 12px; font: 13px var(--mono); cursor: pointer; text-decoration: none; }
+  .wallets img { width: 20px; height: 20px; border-radius: 5px; }
+  .wallets small { margin-left: auto; color: var(--chalk-dim); }
+
+  footer { display: flex; justify-content: space-between; gap: 8px; color: #7d6c58; font-size: 10.5px; flex-wrap: wrap; }
+  footer a { color: var(--chalk-dim); text-decoration: none; border-bottom: 1px dotted #5a4a3a; }
+  footer a:hover { color: var(--amber-hi); }
+  .hid { display: none !important; }
+</style>
+</head>
+<body>
+<div class="swap" id="app">
+  <header>
+    <img src="logo.png" alt="">
+    <div class="name">$ZTO<small>Zero To One</small></div>
+    <div class="px"><b id="pxUsd">…</b><span id="pxSub">loading price</span></div>
+  </header>
+
+  <div class="field">
+    <div class="meta"><span>YOU PAY</span><span id="balLine" class="hid">balance <span id="bal"></span><button id="max" type="button">max</button></span></div>
+    <div class="row">
+      <input id="amt" inputmode="decimal" placeholder="0.0" autocomplete="off" spellcheck="false">
+      <div class="tok"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23627eea'/><path d='M16 5l6.6 11-6.6 3.9L9.4 16z' fill='%23fff' opacity='.7'/><path d='M16 5v14.9L9.4 16z' fill='%23fff'/><path d='M16 21.2l6.6-3.9L16 27l-6.6-9.7z' fill='%23fff' opacity='.7'/><path d='M16 27v-5.8L9.4 17.3z' fill='%23fff'/></svg>" alt="">ETH</div>
+    </div>
+    <div class="seg" id="presets"><button data-v="0.01">0.01</button><button data-v="0.05">0.05</button><button data-v="0.1">0.1</button><button data-v="0.25">0.25</button></div>
+  </div>
+
+  <div class="field">
+    <div class="meta"><span>YOU RECEIVE</span><span id="quoting"></span></div>
+    <div class="row">
+      <div class="out empty" id="out">0.0</div>
+      <div class="tok"><img src="logo.png" alt="">ZTO</div>
+    </div>
+  </div>
+
+  <div class="details">
+    <div>rate</div><div id="rate">—</div>
+    <div>min received</div><div id="minOut">—</div>
+    <div>slippage</div><div class="slip" id="slip"><button data-v="1">1%</button><button data-v="3">3%</button><button data-v="5" class="on">5%</button></div>
+    <div>route</div><div>uniswap v4 · ETH → IMD → ZTO</div>
+    <div>fees</div><div>1% + 1.25% pool fees</div>
+  </div>
+
+  <div class="wallets" id="wallets"></div>
+
+  <button class="go" id="go" type="button">CONNECT WALLET</button>
+  <div class="status" id="status"></div>
+
+  <footer>
+    <span>swarm-made · launch #737 · use at your own risk</span>
+    <span><a href="https://zto.sites.imd.fun/" data-ext>site</a> · <a href="https://etherscan.io/token/0xd782bdea4ef02a0bd391eb9089470c8080f0a68e" data-ext>contract</a> · <a href="https://x.com/ZTO_ETH" data-ext>@ZTO_ETH</a></span>
+  </footer>
+</div>
+
+<script type="module">
+import { encodeAbiParameters, encodeFunctionData, decodeFunctionResult, parseAbi, concatHex, parseEther, formatEther, formatUnits, numberToHex, hexToBigInt } from "./viem.bundle.mjs";
+
+/* ---------- constants (same as scripts/src/zto-buy.ts) ---------- */
+const RPCS = ["https://ethereum-rpc.publicnode.com", "https://gateway.tenderly.co/public/mainnet", "https://eth.llamarpc.com"];
+const UNIVERSAL_ROUTER = "0x0542093271a31f6fc1dadb232bd59eeb27de780f"; // Uniswap Universal Router V2.2 (v4)
+const V4_QUOTER = "0x52f0e24d1c21c8a0cb1e5a5dd6198556bd9e1203";
+const ETH = "0x0000000000000000000000000000000000000000";
+const IMD = "0xd34a99bc0f67ae1bbd63c660e6d0b0dd03e263b7";
+const ZTO = "0xd782bdea4ef02a0bd391eb9089470c8080f0a68e";
+const ETH_IMD = { currency0: ETH, currency1: IMD, fee: 10000, tickSpacing: 200, hooks: ETH };
+const IMD_ZTO = { currency0: IMD, currency1: ZTO, fee: 12500, tickSpacing: 60, hooks: "0x784ff9a3ac5d88a30bfff6f7f2a270161fbe6000" };
+const PAGE = location.origin + location.pathname;
+
+const UR_ABI = parseAbi(["function execute(bytes commands, bytes[] inputs, uint256 deadline) payable"]);
+const QUOTER_ABI = parseAbi(["function quoteExactInputSingle(((address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) poolKey, bool zeroForOne, uint128 exactAmount, bytes hookData) params) returns (uint256 amountOut, uint256 gasEstimate)"]);
+const POOL_KEY = { type: "tuple", components: [
+  { name: "currency0", type: "address" }, { name: "currency1", type: "address" }, { name: "fee", type: "uint24" }, { name: "tickSpacing", type: "int24" }, { name: "hooks", type: "address" } ] };
+const SWAP_IN_SINGLE = [{ type: "tuple", components: [
+  { name: "poolKey", ...POOL_KEY }, { name: "zeroForOne", type: "bool" }, { name: "amountIn", type: "uint128" }, { name: "amountOutMinimum", type: "uint128" }, { name: "minHopPriceX36", type: "uint256" }, { name: "hookData", type: "bytes" } ] }];
+const byte = (n) => "0x" + n.toString(16).padStart(2, "0");
+
+/** ETH -> IMD -> ZTO in one Universal Router call: V4_SWAP(0x10) with SWAP_EXACT_IN_SINGLE x2, SETTLE_ALL, TAKE_ALL. */
+function buildCalldata(ethIn, minOut) {
+  const actions = concatHex([byte(6), byte(6), byte(12), byte(15)]);
+  const params = [
+    encodeAbiParameters(SWAP_IN_SINGLE, [{ poolKey: ETH_IMD, zeroForOne: true, amountIn: ethIn, amountOutMinimum: 0n, minHopPriceX36: 0n, hookData: "0x" }]),
+    encodeAbiParameters(SWAP_IN_SINGLE, [{ poolKey: IMD_ZTO, zeroForOne: true, amountIn: 0n, amountOutMinimum: minOut, minHopPriceX36: 0n, hookData: "0x" }]),
+    encodeAbiParameters([{ type: "address" }, { type: "uint256" }], [ETH, ethIn]),
+    encodeAbiParameters([{ type: "address" }, { type: "uint256" }], [ZTO, minOut]),
+  ];
+  const v4 = encodeAbiParameters([{ type: "bytes" }, { type: "bytes[]" }], [actions, params]);
+  const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
+  return encodeFunctionData({ abi: UR_ABI, functionName: "execute", args: [byte(16), [v4], deadline] });
+}
+
+/* ---------- rpc ---------- */
+let rpcIx = 0;
+async function rpc(method, params) {
+  for (let i = 0; i < RPCS.length; i++) {
+    const url = RPCS[(rpcIx + i) % RPCS.length];
+    try {
+      const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+      const j = await r.json();
+      if (j.error) throw new Error(j.error.message || "rpc error");
+      rpcIx = (rpcIx + i) % RPCS.length;
+      return j.result;
+    } catch (e) { if (i === RPCS.length - 1) throw e; }
+  }
+}
+async function quoteSingle(poolKey, amount) {
+  const data = encodeFunctionData({ abi: QUOTER_ABI, functionName: "quoteExactInputSingle", args: [{ poolKey, zeroForOne: true, exactAmount: amount, hookData: "0x" }] });
+  const out = await rpc("eth_call", [{ to: V4_QUOTER, data }, "latest"]);
+  return decodeFunctionResult({ abi: QUOTER_ABI, functionName: "quoteExactInputSingle", data: out })[0];
+}
+async function quoteEthToZto(ethIn) { const imd = await quoteSingle(ETH_IMD, ethIn); return quoteSingle(IMD_ZTO, imd); }
+
+/* ---------- ui state ---------- */
+const $ = (id) => document.getElementById(id);
+const framed = window.self !== window.top;
+if (framed) document.body.classList.add("framed");
+const openExt = (url) => framed ? window.open(url, "_blank", "noopener") : window.location.assign(url);
+for (const a of document.querySelectorAll("a[data-ext]")) a.addEventListener("click", (e) => { e.preventDefault(); openExt(a.href); });
+
+let slipBps = 500n, ethIn = 0n, ztoOut = 0n, quoteSeq = 0, ethUsd = 0, ztoUsd = 0;
+let provider = null, account = null, chainId = null, busy = false;
+const fmt = (v, d = 18, max = 4) => Number(formatUnits(v, d)).toLocaleString("en-US", { maximumFractionDigits: max });
+const usd = (n) => n >= 1 ? "$" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : n > 0 ? "$" + n.toPrecision(3) : "";
+
+async function loadPrice() {
+  try {
+    const [z, w] = await Promise.all([
+      fetch("https://api.dexscreener.com/tokens/v1/ethereum/" + ZTO).then(r => r.json()),
+      fetch("https://api.dexscreener.com/tokens/v1/ethereum/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2").then(r => r.json()),
+    ]);
+    const p = (z || []).sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
+    ethUsd = Number(w?.[0]?.priceUsd || 0);
+    if (p) {
+      ztoUsd = Number(p.priceUsd || 0);
+      const ch = Number(p.priceChange?.h24 ?? 0);
+      $("pxUsd").textContent = usd(ztoUsd) || "—";
+      $("pxSub").innerHTML = `<span class="${ch >= 0 ? "up" : "down"}">${ch >= 0 ? "+" : ""}${ch.toFixed(1)}%</span> 24h${p.marketCap ? " · MC " + usd(p.marketCap) : ""}`;
+    }
+  } catch { $("pxSub").textContent = "price unavailable"; }
+  try { // quoter-based price as the live source (DexScreener lags)
+    const out = await quoteEthToZto(parseEther("0.001"));
+    if (ethUsd && out > 0n) { ztoUsd = (0.001 * ethUsd) / Number(formatUnits(out, 18)) / 0.9775; $("pxUsd").textContent = usd(ztoUsd); }
+  } catch {}
+}
+
+async function requote() {
+  const raw = $("amt").value.trim();
+  let v = 0n; try { v = raw ? parseEther(raw) : 0n; } catch { v = 0n; }
+  ethIn = v; ztoOut = 0n;
+  const seq = ++quoteSeq;
+  if (v <= 0n) { $("out").textContent = "0.0"; $("out").classList.add("empty"); $("rate").textContent = "—"; $("minOut").textContent = "—"; $("quoting").textContent = ""; render(); return; }
+  $("quoting").textContent = "quoting…";
+  try {
+    const out = await quoteEthToZto(v);
+    if (seq !== quoteSeq) return;
+    ztoOut = out;
+    $("out").textContent = fmt(out, 18, 0); $("out").classList.remove("empty");
+    $("quoting").textContent = ethUsd ? "≈ " + usd(Number(formatEther(v)) * ethUsd) : "";
+    const minOut = (out * (10000n - slipBps)) / 10000n;
+    $("minOut").textContent = fmt(minOut, 18, 0) + " ZTO";
+    $("rate").textContent = "1 ETH = " + fmt((out * 10n ** 18n) / v, 18, 0) + " ZTO";
+  } catch (e) {
+    if (seq !== quoteSeq) return;
+    $("out").textContent = "0.0"; $("out").classList.add("empty");
+    $("quoting").textContent = "quote failed: the pool may not cover this size";
+    $("rate").textContent = "—"; $("minOut").textContent = "—";
+  }
+  render();
+}
+
+function render() {
+  const go = $("go");
+  go.classList.remove("ghost");
+  if (busy) { go.disabled = true; return; }
+  if (!account) { go.disabled = false; go.textContent = "CONNECT WALLET"; return; }
+  if (chainId !== 1) { go.disabled = false; go.textContent = "SWITCH TO ETHEREUM"; return; }
+  if (ethIn <= 0n) { go.disabled = true; go.textContent = "ENTER AN AMOUNT"; return; }
+  if (ztoOut <= 0n) { go.disabled = true; go.textContent = "QUOTING…"; return; }
+  go.disabled = false; go.textContent = "BUY $ZTO";
+}
+function status(msg, cls = "") { $("status").innerHTML = msg; $("status").className = "status " + cls; }
+
+/* ---------- wallets: EIP-6963 + window.ethereum + mobile deep links ---------- */
+const found = new Map();
+window.addEventListener("eip6963:announceProvider", (e) => { const { info, provider: p } = e.detail || {}; if (info?.uuid && !found.has(info.rdns || info.uuid)) { found.set(info.rdns || info.uuid, { info, provider: p }); renderWallets(); } });
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+setTimeout(() => { if (!found.size && window.ethereum) { found.set("injected", { info: { name: window.ethereum.isRabby ? "Rabby" : window.ethereum.isMetaMask ? "MetaMask" : "Browser wallet", icon: "" }, provider: window.ethereum }); } renderWallets(); }, 300);
+
+function renderWallets() {
+  const box = $("wallets"); box.innerHTML = "";
+  if (!box.classList.contains("open")) return;
+  for (const [key, w] of found) {
+    const b = document.createElement("button"); b.type = "button";
+    b.innerHTML = `${w.info.icon ? `<img src="${w.info.icon}" alt="">` : ""}<span>${w.info.name}</span><small>installed</small>`;
+    b.onclick = () => connect(w.provider, w.info.name);
+    box.appendChild(b);
+  }
+  if (!found.size) {
+    const u = encodeURIComponent(PAGE);
+    const host = PAGE.replace(/^https?:\/\//, "");
+    const links = [
+      ["MetaMask", `https://metamask.app.link/dapp/${host}`],
+      ["Coinbase Wallet", `https://go.cb-w.com/dapp?cb_url=${u}`],
+      ["Rainbow", `https://rnbwapp.com/dapp?url=${u}`],
+    ];
+    for (const [name, href] of links) {
+      const a = document.createElement("a"); a.href = href; a.innerHTML = `<span>${name}</span><small>open in app</small>`;
+      a.onclick = (e) => { e.preventDefault(); openExt(href); };
+      box.appendChild(a);
+    }
+    const a = document.createElement("a"); a.href = PAGE; a.innerHTML = `<span>Open this page in your browser</span><small>↗</small>`;
+    a.onclick = (e) => { e.preventDefault(); window.open(PAGE, "_blank", "noopener"); };
+    box.appendChild(a);
+  }
+}
+
+async function connect(p, name) {
+  try {
+    busy = true; render(); status(`connecting ${name}…`);
+    const accs = await p.request({ method: "eth_requestAccounts" });
+    provider = p; account = accs[0];
+    chainId = Number(hexToBigInt(await p.request({ method: "eth_chainId" })));
+    p.on?.("accountsChanged", (a) => { account = a[0] || null; refreshBalance(); render(); });
+    p.on?.("chainChanged", (c) => { chainId = Number(hexToBigInt(c)); refreshBalance(); render(); });
+    $("wallets").classList.remove("open");
+    status(`${account.slice(0, 6)}…${account.slice(-4)} · ${name}`);
+    await refreshBalance();
+  } catch (e) { status(e?.message || "connection cancelled", "err"); }
+  finally { busy = false; render(); }
+}
+async function refreshBalance() {
+  if (!account || chainId !== 1) { $("balLine").classList.add("hid"); return; }
+  try {
+    const b = hexToBigInt(await rpc("eth_getBalance", [account, "latest"]));
+    $("bal").textContent = fmt(b, 18, 4) + " ETH"; $("bal").dataset.wei = b.toString();
+    $("balLine").classList.remove("hid");
+  } catch {}
+}
+async function switchChain() {
+  try { busy = true; render(); await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x1" }] }); chainId = 1; await refreshBalance(); }
+  catch (e) { status(e?.message || "switch cancelled", "err"); }
+  finally { busy = false; render(); }
+}
+
+async function buy() {
+  const minOut = (ztoOut * (10000n - slipBps)) / 10000n;
+  const data = buildCalldata(ethIn, minOut);
+  try {
+    busy = true; render(); $("go").textContent = "CONFIRM IN WALLET…";
+    status(`buying ≥ ${fmt(minOut, 18, 0)} ZTO for ${formatEther(ethIn)} ETH…`);
+    const hash = await provider.request({ method: "eth_sendTransaction", params: [{ from: account, to: UNIVERSAL_ROUTER, data, value: numberToHex(ethIn) }] });
+    $("go").textContent = "PENDING…";
+    status(`pending · <a href="https://etherscan.io/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`);
+    let rc = null;
+    for (let i = 0; i < 120 && !rc; i++) { await new Promise(r => setTimeout(r, 3000)); rc = await rpc("eth_getTransactionReceipt", [hash]).catch(() => null); }
+    if (rc?.status === "0x1") { status(`done · you bought $ZTO · <a href="https://etherscan.io/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`, "ok"); $("amt").value = ""; await requote(); }
+    else if (rc) status(`reverted (price moved past your slippage?) · <a href="https://etherscan.io/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`, "err");
+    else status(`still pending · <a href="https://etherscan.io/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`);
+    await refreshBalance();
+  } catch (e) {
+    const m = e?.shortMessage || e?.message || "cancelled";
+    status(/reject|denied|cancel/i.test(m) ? "cancelled in wallet" : m.slice(0, 160), "err");
+  } finally { busy = false; render(); }
+}
+
+/* ---------- wire up ---------- */
+$("amt").addEventListener("input", () => { for (const b of $("presets").children) b.classList.toggle("on", b.dataset.v === $("amt").value); requote(); });
+for (const b of $("presets").children) b.onclick = () => { $("amt").value = b.dataset.v; $("amt").dispatchEvent(new Event("input")); };
+for (const b of $("slip").children) b.onclick = () => { for (const x of $("slip").children) x.classList.remove("on"); b.classList.add("on"); slipBps = BigInt(b.dataset.v) * 100n; requote(); };
+$("max").onclick = () => { const w = BigInt($("bal").dataset.wei || "0"); const keep = parseEther("0.002"); if (w > keep) { $("amt").value = formatEther(w - keep); $("amt").dispatchEvent(new Event("input")); } };
+$("go").onclick = () => {
+  if (!account) { const box = $("wallets"); box.classList.toggle("open"); renderWallets(); return; }
+  if (chainId !== 1) return switchChain();
+  if (ztoOut > 0n) return buy();
+};
+const pre = new URLSearchParams(location.search).get("eth"); if (pre && /^\d*\.?\d+$/.test(pre)) { $("amt").value = pre; $("amt").dispatchEvent(new Event("input")); }
+loadPrice(); render();
+setInterval(() => { if (ethIn > 0n && !busy) requote(); }, 15000);
+</script>
+</body>
+</html>
