@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mint Pepeolithic</title>
+<meta name="description" content="Pepeolithic: 737 cave paintings painted by the IMD swarm, paid in ZTO. Press play to mint from this post.">
+<link rel="icon" href="../logo.png" type="image/png">
+
+<!-- X "player" card: the post renders this page inside the timeline. -->
+<meta name="twitter:card" content="player">
+<meta name="twitter:site" content="@ZTO_ETH">
+<meta name="twitter:title" content="Mint Pepeolithic from this post">
+<meta name="twitter:description" content="737 cave paintings, painted by the IMD swarm. Paid in ZTO. Press play.">
+<meta name="twitter:image" content="https://inverted0888.github.io/zto/mint/card.png">
+<meta name="twitter:player" content="https://inverted0888.github.io/zto/mint/">
+<meta name="twitter:player:width" content="480">
+<meta name="twitter:player:height" content="560">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Zero To One">
+<meta property="og:title" content="Mint Pepeolithic">
+<meta property="og:description" content="737 cave paintings, painted by the IMD swarm. Paid in ZTO. Press play to mint from this post.">
+<meta property="og:url" content="https://inverted0888.github.io/zto/mint/">
+<meta property="og:image" content="https://inverted0888.github.io/zto/mint/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<style>
+  :root {
+    --char: #15100c; --char-2: #1f1813; --line: #35291f;
+    --chalk: #efe6d6; --chalk-dim: #b9aa90; --amber: #f5a623; --amber-hi: #ffc55c;
+    --moss: #a5d78a; --red: #e86a5a; --ochre: #d9a441;
+    --mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--char); color: var(--chalk); font: 13px/1.4 var(--mono); display: flex; justify-content: center; align-items: flex-start;
+    background-image: radial-gradient(ellipse at 50% -10%, #2c2015 0%, var(--char) 55%); }
+  .card { width: 100%; max-width: 480px; min-height: 100vh; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+  body:not(.framed) .card { min-height: 0; margin: 6vh auto; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.25); }
+
+  header { display: flex; align-items: center; gap: 10px; }
+  header img { width: 44px; height: 44px; border-radius: 9px; object-fit: cover; background: #000; }
+  header .name { font-weight: 700; letter-spacing: .04em; line-height: 1.2; }
+  header .name small { display: block; color: var(--chalk-dim); font-weight: 400; }
+  header .st { margin-left: auto; text-align: right; white-space: nowrap; font-size: 11px; color: var(--chalk-dim); }
+  header .st b { display: block; color: var(--amber-hi); font-size: 13px; }
+
+  .piece { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--char-2); }
+  .piece .meta { display: flex; justify-content: space-between; color: var(--chalk-dim); font-size: 11px; letter-spacing: .06em; }
+  .piece .big { font-size: 30px; line-height: 1.15; margin-top: 4px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .piece .big small { font-size: 13px; color: var(--chalk-dim); }
+  .piece .sub { color: var(--chalk-dim); font-size: 11.5px; margin-top: 4px; }
+  .bar { height: 6px; border-radius: 3px; background: #2a2017; margin-top: 10px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--ochre), var(--amber-hi)); width: 0; transition: width .6s; }
+
+  .details { display: grid; grid-template-columns: 1fr auto; row-gap: 4px; column-gap: 12px; color: var(--chalk-dim); font-size: 11.5px; padding: 0 4px; }
+  .details div:nth-child(even) { text-align: right; color: var(--chalk); white-space: nowrap; }
+  .details a, .status a, .fine a { color: var(--amber-hi); }
+
+  .go { margin-top: auto; width: 100%; border: 0; border-radius: 12px; padding: 14px; font: 700 15px/1 var(--mono); letter-spacing: .08em; cursor: pointer; background: var(--amber); color: #000; }
+  .go:disabled { background: #3a2d1f; color: #8d7a63; cursor: default; }
+  .alt { width: 100%; background: none; border: 1px solid var(--line); color: var(--chalk-dim); border-radius: 10px; padding: 9px; font: 12px var(--mono); cursor: pointer; }
+  .alt:hover { border-color: var(--amber); color: var(--amber-hi); }
+  .status { min-height: 18px; font-size: 11.5px; color: var(--chalk-dim); text-align: center; word-break: break-word; }
+  .status.err { color: var(--red); } .status.ok { color: var(--moss); }
+  .fine { color: #7d6c58; font-size: 10.5px; text-align: center; }
+
+  .wallets { display: none; flex-direction: column; gap: 6px; }
+  .wallets.open { display: flex; }
+  .wallets button, .wallets a { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); background: var(--char-2); color: var(--chalk); border-radius: 10px; padding: 9px 12px; font: 13px var(--mono); cursor: pointer; text-decoration: none; }
+  .wallets img { width: 20px; height: 20px; border-radius: 5px; }
+  .wallets small { margin-left: auto; color: var(--chalk-dim); }
+
+  .getzto { display: none; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #000; }
+  .getzto.open { display: block; }
+  .getzto iframe { width: 100%; height: 420px; border: 0; display: block; }
+
+  footer { display: flex; justify-content: space-between; gap: 8px; color: #7d6c58; font-size: 10.5px; flex-wrap: wrap; }
+  footer a { color: var(--chalk-dim); text-decoration: none; border-bottom: 1px dotted #5a4a3a; }
+  .hid { display: none !important; }
+</style>
+</head>
+<body>
+<div class="card">
+  <header>
+    <img src="wall.png" alt="">
+    <div class="name">Pepeolithic<small>737 cave paintings · paid in <span id="sym">ZTO</span></small></div>
+    <div class="st"><b id="stTop">…</b><span id="stSub">reading the cave</span></div>
+  </header>
+
+  <div class="piece">
+    <div class="meta"><span id="pieceLbl">PEPE</span><span id="pieceRight"></span></div>
+    <div class="big"><span id="price">…</span><small id="priceSym"></small></div>
+    <div class="sub" id="pieceSub"></div>
+    <div class="bar"><i id="bar"></i></div>
+  </div>
+
+  <div class="details">
+    <div>cave</div><div id="dCave">—</div>
+    <div>round</div><div id="dRound">—</div>
+    <div>this round</div><div id="dLeft">—</div>
+    <div>at the floor</div><div id="dFloor">—</div>
+    <div>minted</div><div id="dMinted">—</div>
+    <div>your <span id="sym2">ZTO</span></div><div id="dBal">connect to see</div>
+  </div>
+
+  <div class="wallets" id="wallets"></div>
+  <div class="getzto" id="getzto"></div>
+
+  <button class="go" id="go" type="button">CONNECT WALLET</button>
+  <button class="alt" id="floorBtn" type="button">BUY AN OLDER PEPE AT THE FLOOR</button>
+  <button class="alt" id="getBtn" type="button">NEED ZTO? GET SOME HERE</button>
+  <div class="status" id="status"></div>
+  <div class="fine" id="fine">First mint is two taps: approve once, then buy. You pay the price at the moment your transaction lands, never more than shown. A buy above the floor sets the next round's opening at twice it.</div>
+
+  <footer>
+    <span>painted by the IMD swarm · use at your own risk</span>
+    <span><a href="https://zto.sites.imd.fun/" data-ext>site</a> · <a id="scanLink" href="#" data-ext>contract</a> · <a href="https://x.com/ZTO_ETH" data-ext>@ZTO_ETH</a></span>
+  </footer>
+</div>
+
+<script type="module">
+import { encodeFunctionData, decodeFunctionResult, parseAbi, formatUnits, hexToBigInt } from "../viem.bundle.mjs";
+
+/* ---------- config: Friday's edit is contract + start, and preview false ---------- */
+const CONFIG = { chain: "mainnet", contract: "", start: 0, dateLine: "date drops Friday", preview: true };
+const CHAINS = {
+  sepolia: { id: 11155111, hex: "0xaa36a7", name: "Sepolia", rpcs: ["https://ethereum-sepolia-rpc.publicnode.com", "https://sepolia.drpc.org", "https://1rpc.io/sepolia"], scan: "https://sepolia.etherscan.io" },
+  mainnet: { id: 1, hex: "0x1", name: "Ethereum", rpcs: ["https://ethereum-rpc.publicnode.com", "https://gateway.tenderly.co/public/mainnet", "https://eth.drpc.org"], scan: "https://etherscan.io" },
+};
+// URL switches work only while CONFIG.preview is true (the dev copy). A published build ignores them, so a link to our
+// real address with somebody else's contract can never show working buttons.
+const Q = new URLSearchParams(location.search);
+const DEV = CONFIG.preview;
+const contract = (DEV && /^0x[0-9a-fA-F]{40}$/.test(Q.get("contract") || "") ? Q.get("contract") : CONFIG.contract).toLowerCase();
+const CHAIN = CHAINS[(DEV && Q.get("chain")) || CONFIG.chain] || CHAINS.mainnet;
+if (DEV && /^\d{9,10}$/.test(Q.get("start") || "")) CONFIG.start = +Q.get("start");
+const LIVE = /^0x[0-9a-f]{40}$/.test(contract);
+
+const ABI = parseAbi([
+  "function startTime() view returns (uint256)", "function caveLength() view returns (uint256)", "function roundLength() view returns (uint256)",
+  "function floorPrice() view returns (uint256)", "function coin() view returns (address)", "function totalSupply() view returns (uint256)",
+  "function roundSold(uint256 c, uint256 r) view returns (uint256)", "function priceNow(uint256 c, uint256 r) view returns (uint256)",
+  "function openingPrice(uint256 c, uint256 r) view returns (uint256)", "function buy(uint256 c, uint256 r) returns (uint256)",
+  "function symbol() view returns (string)", "function decimals() view returns (uint8)",
+  "function balanceOf(address) view returns (uint256)", "function allowance(address, address) view returns (uint256)", "function approve(address, uint256) returns (bool)",
+]);
+const TRANSFER = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+const CAVES = ["Base", "Moss", "Water", "Ice", "Lava", "Crystal", "Roots"];
+const K = [1, 1, 2, 3, 4, 4, 4];
+const kOf = (c, r) => (c === 7 && r === 21) ? 5 : K[c - 1];
+const pieceId = (c, r, slot) => (c - 1) * 105 + (r - 1) * 5 + slot;
+
+/* ---------- rpc ---------- */
+let rpcIx = 0;
+async function post(body) {
+  for (let k = 0; k < CHAIN.rpcs.length; k++) {
+    const url = CHAIN.rpcs[(rpcIx + k) % CHAIN.rpcs.length];
+    try {
+      const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(9000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json(); rpcIx = (rpcIx + k) % CHAIN.rpcs.length; return j;
+    } catch (e) { if (k === CHAIN.rpcs.length - 1) throw e; }
+  }
+}
+async function rpc(method, params) { const j = await post({ jsonrpc: "2.0", id: 1, method, params }); if (j.error) throw new Error(j.error.message); return j.result; }
+const enc = (functionName, args = []) => encodeFunctionData({ abi: ABI, functionName, args });
+const dec = (functionName, data) => data && data !== "0x" ? decodeFunctionResult({ abi: ABI, functionName, data }) : null;
+async function calls(list) { // [[to, fn, args], ...] in one batch; null where the call failed
+  const body = list.map(([to, fn, args], i) => ({ jsonrpc: "2.0", id: i, method: "eth_call", params: [{ to, data: enc(fn, args) }, "latest"] }));
+  const j = await post(body); if (!Array.isArray(j)) throw new Error("bad batch reply");
+  return list.map(([, fn], i) => { const x = j.find((y) => y.id === i); try { return x && !x.error ? dec(fn, x.result) : null; } catch { return null; } });
+}
+
+/* ---------- state ---------- */
+const $ = (id) => document.getElementById(id);
+const framed = window.self !== window.top;
+if (framed) document.body.classList.add("framed");
+const openExt = (url) => framed ? window.open(url, "_blank", "noopener") : window.location.assign(url);
+for (const a of document.querySelectorAll("a[data-ext]")) a.addEventListener("click", (e) => { e.preventDefault(); openExt(a.href); });
+if (LIVE) $("scanLink").href = `${CHAIN.scan}/address/${contract}`;
+
+const S = { ok: false, err: "", start: CONFIG.start, caveLen: 86400, roundLen: 3600, floor: 10000n * 10n ** 18n, coin: null, sym: "ZTO", dec: 18, supply: 0n, roundSold: {}, opening: {}, priceNow: {} };
+const W = { provider: null, addr: null, chainId: null, bal: 0n, allow: 0n, busy: false, name: "" };
+const nowSec = () => Math.floor(Date.now() / 1000);
+const clock = (s) => { s = Math.max(0, Math.floor(s)); const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return (d ? `${d}d ` : "") + (h || d ? `${h}:` : "") + `${String(m).padStart(2, "0")}:${String(x).padStart(2, "0")}`; };
+const amt = (wei) => { const n = Number(formatUnits(wei, S.dec)); return n >= 1000 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : n >= 1 ? n.toLocaleString("en-US", { maximumFractionDigits: 2 }) : n.toLocaleString("en-US", { maximumFractionDigits: 5 }); };
+const et = (s) => new Date(s * 1000).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York", timeZoneName: "short" });
+
+function derive() {
+  const now = nowSec(), d = { now };
+  if (!S.start || now < S.start) { d.phase = "before"; d.until = S.start ? S.start - now : 0; return d; }
+  const c = Math.floor((now - S.start) / S.caveLen) + 1;
+  if (c > 7) { d.phase = "over"; return d; }
+  d.c = c; d.caveOpen = S.start + (c - 1) * S.caveLen; d.caveClose = d.caveOpen + S.caveLen;
+  const rs = (r) => S.roundSold[`${c}:${r}`] || 0;
+  const rMax = Math.min(21, Math.floor((now - d.caveOpen) / S.roundLen) + 1);
+  let r = 0;
+  for (let i = rMax; i >= 1; i--) if (rs(i) < kOf(c, i)) { r = i; break; } // newest open round with a Pepe left
+  d.floorLeft = 0; d.floorR = null;
+  for (let i = 1; i < (r || rMax + 1); i++) if (rs(i) < kOf(c, i) && now >= d.caveOpen + i * S.roundLen) { d.floorLeft += kOf(c, i) - rs(i); if (d.floorR == null) d.floorR = i; }
+  d.floor = S.floor;
+  let sold = 0, count = 0; for (let i = 1; i <= 21; i++) { sold += rs(i); count += kOf(c, i); }
+  d.sold = sold; d.count = count;
+  if (!r) {
+    if (rMax >= 21) { d.phase = "soldout"; d.until = d.caveClose - now; return d; }
+    r = rMax + 1; d.r = r; d.rOpen = d.caveOpen + (r - 1) * S.roundLen; d.slot = 5; d.id = pieceId(c, r, 5); d.leftInRound = kOf(c, r);
+    d.phase = "waiting"; d.until = d.rOpen - now; d.price = S.opening[`${c}:${r}`] ?? null; return d;
+  }
+  d.r = r; d.slot = 5 - rs(r); d.id = pieceId(c, r, d.slot); d.leftInRound = kOf(c, r) - rs(r);
+  d.rOpen = d.caveOpen + (r - 1) * S.roundLen; d.rFloor = d.rOpen + S.roundLen;
+  const live = S.priceNow[`${c}:${r}`];
+  if (now < d.rOpen) { d.phase = "waiting"; d.until = d.rOpen - now; d.price = S.opening[`${c}:${r}`] ?? null; }
+  else if (now < d.rFloor) { d.phase = "line"; d.until = d.rFloor - now; d.price = live ?? null; const op = S.opening[`${c}:${r}`]; d.pct = op && live != null && op > S.floor ? Number((live - S.floor) * 100n / (op - S.floor)) : 0; }
+  else { d.phase = "floor"; d.until = d.caveClose - now; d.price = S.floor; d.pct = 0; }
+  return d;
+}
+
+async function readChain() {
+  if (!LIVE) { S.ok = false; S.err = ""; return; }
+  try {
+    if (!S.coin) {
+      const b = await calls([[contract, "startTime"], [contract, "caveLength"], [contract, "roundLength"], [contract, "floorPrice"], [contract, "coin"]]);
+      if (b[0] == null || b[1] == null) throw new Error("the contract does not answer the sale views");
+      S.start = Number(b[0]); S.caveLen = Number(b[1]); S.roundLen = Number(b[2]); S.floor = b[3]; S.coin = b[4].toLowerCase();
+      const cm = await calls([[S.coin, "symbol"], [S.coin, "decimals"]]);
+      S.sym = cm[0] || "ZTO"; S.dec = cm[1] != null ? Number(cm[1]) : 18;
+      $("sym").textContent = S.sym; $("sym2").textContent = S.sym; $("priceSym").textContent = S.sym;
+    }
+    const d0 = derive();
+    const req = [[contract, "totalSupply"]];
+    if (d0.c) {
+      const rMax = Math.min(21, Math.floor((d0.now - d0.caveOpen) / S.roundLen) + 2);
+      for (let r = 1; r <= rMax; r++) req.push([contract, "roundSold", [BigInt(d0.c), BigInt(r)]]);
+      for (let r = Math.max(1, rMax - 1); r <= rMax; r++) req.push([contract, "openingPrice", [BigInt(d0.c), BigInt(r)]], [contract, "priceNow", [BigInt(d0.c), BigInt(r)]]);
+      if (W.addr) req.push([S.coin, "balanceOf", [W.addr]], [S.coin, "allowance", [W.addr, contract]]);
+      const out = await calls(req);
+      S.supply = out[0] ?? S.supply;
+      let i = 1;
+      for (let r = 1; r <= rMax; r++) S.roundSold[`${d0.c}:${r}`] = Number(out[i++] ?? 0);
+      for (let r = Math.max(1, rMax - 1); r <= rMax; r++) { const op = out[i++], pn = out[i++]; if (op != null) S.opening[`${d0.c}:${r}`] = op; if (pn != null) S.priceNow[`${d0.c}:${r}`] = pn; }
+      if (W.addr) { W.bal = out[i++] ?? 0n; W.allow = out[i++] ?? 0n; }
+    } else {
+      if (W.addr) req.push([S.coin, "balanceOf", [W.addr]], [S.coin, "allowance", [W.addr, contract]]);
+      const out = await calls(req); S.supply = out[0] ?? S.supply; if (W.addr) { W.bal = out[1] ?? 0n; W.allow = out[2] ?? 0n; }
+    }
+    S.ok = true; S.err = "";
+  } catch (e) { S.ok = false; S.err = String(e?.message || e); }
+  render();
+}
+
+function render() {
+  const d = derive();
+  const go = $("go"), fb = $("floorBtn");
+  const wrongChain = W.addr && W.chainId !== CHAIN.id;
+  fb.classList.toggle("hid", !(d.floorLeft > 0));
+  const set = (id, v) => { $(id).textContent = v; };
+  set("dCave", d.c ? `${d.c} of 7 · ${CAVES[d.c - 1]}` : "—");
+  set("dRound", d.r ? `${d.r} of 21` : "—");
+  set("dLeft", d.r ? `${d.leftInRound} left` : "—");
+  set("dFloor", d.floorLeft > 0 ? `${d.floorLeft} waiting · ${amt(d.floor)} ${S.sym}` : "none");
+  set("dMinted", S.ok ? `${S.supply} of 737` : "—");
+  set("dBal", W.addr ? `${amt(W.bal)} ${S.sym}` : "connect to see");
+  $("bar").style.width = `${d.pct ?? 0}%`;
+
+  if (!LIVE) {
+    set("stTop", CONFIG.start ? clock(Math.max(0, CONFIG.start - d.now)) : "soon"); set("stSub", CONFIG.start ? "until cave 1 opens" : CONFIG.dateLine);
+    set("pieceLbl", "THE CAVE"); set("pieceRight", ""); set("price", "—"); set("pieceSub", CONFIG.start ? `Cave 1 opens ${et(CONFIG.start)}.` : "The real button arrives with the real cave. Date drops Friday.");
+    go.disabled = true; go.textContent = CONFIG.start ? "OPENS " + et(CONFIG.start).toUpperCase() : "DATE DROPS FRIDAY"; return;
+  }
+  if (!S.ok && S.err) { set("stTop", "…"); set("stSub", "chain read failed, retrying"); }
+  else if (d.phase === "before") { set("stTop", clock(d.until)); set("stSub", "until cave 1 opens"); }
+  else if (d.phase === "over") { set("stTop", "over"); set("stSub", "the caves are closed"); }
+  else if (d.phase === "soldout") { set("stTop", "sold out"); set("stSub", `next cave in ${clock(d.until)}`); }
+  else if (d.phase === "waiting") { set("stTop", clock(d.until)); set("stSub", `until round ${d.r} opens`); }
+  else if (d.phase === "line") { set("stTop", clock(d.until)); set("stSub", "until the floor"); }
+  else { set("stTop", "at the floor"); set("stSub", `cave closes in ${clock(d.until)}`); }
+
+  if (d.phase === "before") { set("pieceLbl", "CAVE 1 · BASE"); set("pieceRight", ""); set("price", "—"); set("pieceSub", `Opens ${et(S.start)}. 21 rounds, one Pepe line per round, price halving down to ${amt(S.floor)} ${S.sym}.`); }
+  else if (d.phase === "over") { set("pieceLbl", "PEPEOLITHIC"); set("pieceRight", ""); set("price", `${S.supply}`); set("priceSym", "minted"); set("pieceSub", "The sale is over. Leftovers, if any, are on the site."); }
+  else if (d.phase === "soldout") { set("pieceLbl", `CAVE ${d.c} · ${CAVES[d.c - 1].toUpperCase()}`); set("pieceRight", `${d.sold} of ${d.count}`); set("price", "sold out"); set("priceSym", ""); set("pieceSub", "Every Pepe in this cave is gone. The next cave opens on its own clock."); }
+  else {
+    set("pieceLbl", `PEPE #${d.id}`); set("pieceRight", d.slot === 5 ? "the gathering" : `line ${d.slot}`);
+    set("price", d.price != null ? amt(d.price) : "…"); set("priceSym", S.sym);
+    set("pieceSub", d.phase === "waiting" ? `Round ${d.r} opens at ${amt(d.price ?? 0n)} ${S.sym} and falls to the floor over ${clock(S.roundLen)}.` : d.phase === "line" ? `Falling to ${amt(S.floor)} ${S.sym} over this round. ${d.leftInRound} left in round ${d.r}.` : `Waiting at the floor until the cave closes. ${d.leftInRound} left in round ${d.r}.`);
+  }
+
+  go.disabled = false;
+  if (W.busy) { go.disabled = true; return; }
+  if (!W.addr) { go.textContent = "CONNECT WALLET"; return; }
+  if (wrongChain) { go.textContent = `SWITCH TO ${CHAIN.name.toUpperCase()}`; return; }
+  if (d.phase === "before" || d.phase === "waiting") { go.disabled = true; go.textContent = `OPENS IN ${clock(d.until)}`; return; }
+  if (d.phase === "over" || d.phase === "soldout") { go.disabled = true; go.textContent = d.phase === "over" ? "SALE OVER" : "CAVE SOLD OUT"; return; }
+  if (d.price == null) { go.disabled = true; go.textContent = "READING PRICE…"; return; }
+  if (W.bal < d.price) { go.disabled = true; go.textContent = `NEED ${amt(d.price)} ${S.sym}`; return; }
+  go.textContent = W.allow < d.price ? `APPROVE ${S.sym}, THEN BUY #${d.id}` : `BUY PEPE #${d.id} · ${amt(d.price)} ${S.sym}`;
+}
+function status(msg, cls = "") { $("status").innerHTML = msg; $("status").className = "status " + cls; }
+
+/* ---------- wallets: EIP-6963 + window.ethereum + mobile deep links ---------- */
+const PAGE = location.origin + location.pathname;
+const found = new Map();
+window.addEventListener("eip6963:announceProvider", (e) => { const { info, provider } = e.detail || {}; if (info?.uuid && !found.has(info.rdns || info.uuid)) { found.set(info.rdns || info.uuid, { info, provider }); renderWallets(); } });
+window.dispatchEvent(new Event("eip6963:requestProvider"));
+setTimeout(() => { if (!found.size && window.ethereum) found.set("injected", { info: { name: window.ethereum.isRabby ? "Rabby" : window.ethereum.isMetaMask ? "MetaMask" : "Browser wallet", icon: "" }, provider: window.ethereum }); renderWallets(); }, 300);
+function renderWallets() {
+  const box = $("wallets"); box.innerHTML = "";
+  if (!box.classList.contains("open")) return;
+  for (const [, w] of found) {
+    const b = document.createElement("button"); b.type = "button";
+    b.innerHTML = `${w.info.icon ? `<img src="${w.info.icon}" alt="">` : ""}<span>${w.info.name}</span><small>installed</small>`;
+    b.onclick = () => connect(w.provider, w.info.name); box.appendChild(b);
+  }
+  if (!found.size) {
+    const u = encodeURIComponent(PAGE), host = PAGE.replace(/^https?:\/\//, "");
+    for (const [name, href] of [["MetaMask", `https://metamask.app.link/dapp/${host}`], ["Coinbase Wallet", `https://go.cb-w.com/dapp?cb_url=${u}`], ["Rainbow", `https://rnbwapp.com/dapp?url=${u}`]]) {
+      const a = document.createElement("a"); a.href = href; a.innerHTML = `<span>${name}</span><small>open in app</small>`; a.onclick = (e) => { e.preventDefault(); openExt(href); }; box.appendChild(a);
+    }
+    const a = document.createElement("a"); a.href = PAGE; a.innerHTML = `<span>Open this page in your browser</span><small>↗</small>`; a.onclick = (e) => { e.preventDefault(); window.open(PAGE, "_blank", "noopener"); }; box.appendChild(a);
+  }
+}
+async function connect(p, name) {
+  try {
+    W.busy = true; render(); status(`connecting ${name}…`);
+    const accs = await p.request({ method: "eth_requestAccounts" });
+    W.provider = p; W.addr = accs[0].toLowerCase(); W.name = name;
+    W.chainId = Number(hexToBigInt(await p.request({ method: "eth_chainId" })));
+    p.on?.("accountsChanged", (a) => { W.addr = a[0]?.toLowerCase() || null; readChain(); });
+    p.on?.("chainChanged", (c) => { W.chainId = Number(hexToBigInt(c)); readChain(); });
+    $("wallets").classList.remove("open");
+    status(`${W.addr.slice(0, 6)}…${W.addr.slice(-4)} · ${name}`);
+  } catch (e) { status(e?.message || "connection cancelled", "err"); }
+  finally { W.busy = false; await readChain(); }
+}
+async function switchChain() {
+  try { W.busy = true; render(); await W.provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN.hex }] }); W.chainId = CHAIN.id; }
+  catch (e) { status(e?.message || "switch cancelled", "err"); }
+  finally { W.busy = false; await readChain(); }
+}
+async function send(to, data, label) {
+  W.busy = true; render(); $("go").textContent = `${label.toUpperCase()}: CONFIRM IN WALLET…`;
+  try {
+    const hash = await W.provider.request({ method: "eth_sendTransaction", params: [{ from: W.addr, to, data }] });
+    $("go").textContent = `${label.toUpperCase()}: PENDING…`;
+    status(`${label} sent · <a href="${CHAIN.scan}/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`);
+    let rc = null;
+    for (let i = 0; i < 120 && !rc; i++) { await new Promise((r) => setTimeout(r, 3000)); rc = await rpc("eth_getTransactionReceipt", [hash]).catch(() => null); }
+    if (!rc) { status(`${label} still pending · <a href="${CHAIN.scan}/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`); return null; }
+    if (rc.status !== "0x1") { status(`${label} reverted (someone got there first, or the price moved) · <a href="${CHAIN.scan}/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`, "err"); return null; }
+    return { hash, rc };
+  } catch (e) {
+    const m = e?.shortMessage || e?.message || "cancelled";
+    status(/reject|denied|cancel/i.test(m) ? "cancelled in wallet" : m.slice(0, 160), "err"); return null;
+  } finally { W.busy = false; await readChain(); }
+}
+async function buy(round) {
+  const d = derive();
+  const r = round ?? d.r, price = round ? d.floor : d.price;
+  if (!r || price == null) return;
+  if (W.allow < price) { const ok = await send(S.coin, enc("approve", [contract, (1n << 256n) - 1n]), `Approve ${S.sym}`); if (!ok) return; }
+  const res = await send(contract, enc("buy", [BigInt(d.c), BigInt(r)]), "Buy");
+  if (!res) return;
+  const mint = (res.rc.logs || []).find((l) => l.address.toLowerCase() === contract && l.topics[0] === TRANSFER && /^0x0+$/.test(l.topics[1]));
+  const id = mint ? Number(hexToBigInt(mint.topics[3])) : null;
+  status(`Pepe${id != null ? " #" + id : ""} is yours. ${S.sym} went to the dead address. <a href="${CHAIN.scan}/tx/${res.hash}" target="_blank" rel="noopener">tx ↗</a>`, "ok");
+}
+
+/* ---------- wire up ---------- */
+$("go").onclick = () => {
+  if (!W.addr) { $("wallets").classList.toggle("open"); renderWallets(); return; }
+  if (W.chainId !== CHAIN.id) return switchChain();
+  buy();
+};
+$("floorBtn").onclick = () => { const d = derive(); if (!W.addr) { $("wallets").classList.add("open"); renderWallets(); return; } if (d.floorR) buy(d.floorR); };
+$("getBtn").onclick = () => {
+  const g = $("getzto"); g.classList.toggle("open");
+  if (g.classList.contains("open") && !g.firstChild) { const f = document.createElement("iframe"); f.src = "../?eth=0.05"; f.title = "Buy $ZTO"; g.appendChild(f); }
+  $("getBtn").textContent = g.classList.contains("open") ? "HIDE" : "NEED ZTO? GET SOME HERE";
+};
+render();
+readChain();
+setInterval(render, 1000);
+setInterval(() => { if (!W.busy) readChain(); }, 5000);
+</script>
+</body>
+</html>
