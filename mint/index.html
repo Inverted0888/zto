@@ -112,7 +112,7 @@
   <button class="alt" id="floorBtn" type="button">BUY AN OLDER PEPE AT THE FLOOR</button>
   <button class="alt" id="getBtn" type="button">NEED ZTO? GET SOME HERE</button>
   <div class="status" id="status"></div>
-  <div class="fine" id="fine">First mint is two taps: approve once, then buy. You pay the price at the moment your transaction lands, never more than shown. A buy above the floor sets the next round's opening at twice it.</div>
+  <div class="fine" id="fine">First mint is two taps: approve once, then buy. You pay the price at the moment your transaction lands, never more than shown. A buy above the floor sets the next round's opening at twice it, never below half this round's.</div>
 
   <footer>
     <span>painted by the IMD swarm · use at your own risk</span>
@@ -124,7 +124,7 @@
 import { encodeFunctionData, decodeFunctionResult, parseAbi, formatUnits, hexToBigInt } from "../viem.bundle.mjs";
 
 /* ---------- config: Friday's edit is contract + start, and preview false ---------- */
-const CONFIG = { chain: "mainnet", contract: "", start: 0, dateLine: "date drops Friday", preview: true };
+const CONFIG = { chain: "mainnet", contract: "0x765956a7307222346b08fff681820a5d77e92028", start: 1791810000, dateLine: "Mon Oct 12, 9 AM ET", preview: false };
 const CHAINS = {
   sepolia: { id: 11155111, hex: "0xaa36a7", name: "Sepolia", rpcs: ["https://ethereum-sepolia-rpc.publicnode.com", "https://sepolia.drpc.org", "https://1rpc.io/sepolia"], scan: "https://sepolia.etherscan.io" },
   mainnet: { id: 1, hex: "0x1", name: "Ethereum", rpcs: ["https://ethereum-rpc.publicnode.com", "https://gateway.tenderly.co/public/mainnet", "https://eth.drpc.org"], scan: "https://etherscan.io" },
