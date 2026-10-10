@@ -90,7 +90,7 @@
   </header>
 
   <div class="piece">
-    <div class="meta"><span id="pieceLbl">PEPE</span><span id="pieceRight"></span></div>
+    <div class="meta"><span id="pieceLbl">PEPEOLITHIC</span><span id="pieceRight"></span></div>
     <div class="big"><span id="price">…</span><small id="priceSym"></small></div>
     <div class="sub" id="pieceSub"></div>
     <div class="bar"><i id="bar"></i></div>
@@ -109,7 +109,7 @@
   <div class="getzto" id="getzto"></div>
 
   <button class="go" id="go" type="button">CONNECT WALLET</button>
-  <button class="alt" id="floorBtn" type="button">BUY AN OLDER PEPE AT THE FLOOR</button>
+  <button class="alt" id="floorBtn" type="button">BUY AN OLDER PEPEOLITHIC AT THE FLOOR</button>
   <button class="alt" id="getBtn" type="button">NEED ZTO? GET SOME HERE</button>
   <div class="status" id="status"></div>
   <div class="fine" id="fine">First mint is two taps: approve once, then buy. You pay the price at the moment your transaction lands, never more than shown. A buy above the floor sets the next round's opening at twice it, never below half this round's.</div>
@@ -197,7 +197,7 @@ function derive() {
   const rs = (r) => S.roundSold[`${c}:${r}`] || 0;
   const rMax = Math.min(21, Math.floor((now - d.caveOpen) / S.roundLen) + 1);
   let r = 0;
-  for (let i = rMax; i >= 1; i--) if (rs(i) < kOf(c, i)) { r = i; break; } // newest open round with a Pepe left
+  for (let i = rMax; i >= 1; i--) if (rs(i) < kOf(c, i)) { r = i; break; } // newest open round with a Pepeolithic left
   d.floorLeft = 0; d.floorR = null;
   for (let i = 1; i < (r || rMax + 1); i++) if (rs(i) < kOf(c, i) && now >= d.caveOpen + i * S.roundLen) { d.floorLeft += kOf(c, i) - rs(i); if (d.floorR == null) d.floorR = i; }
   d.floor = S.floor;
@@ -277,11 +277,11 @@ function render() {
   else if (d.phase === "line") { set("stTop", clock(d.until)); set("stSub", "until the floor"); }
   else { set("stTop", "at the floor"); set("stSub", `cave closes in ${clock(d.until)}`); }
 
-  if (d.phase === "before") { set("pieceLbl", "CAVE 1 · BASE"); set("pieceRight", ""); set("price", "—"); set("pieceSub", `Opens ${et(S.start)}. 21 rounds, one Pepe line per round, price halving down to ${amt(S.floor)} ${S.sym}.`); }
+  if (d.phase === "before") { set("pieceLbl", "CAVE 1 · BASE"); set("pieceRight", ""); set("price", "—"); set("pieceSub", `Opens ${et(S.start)}. 21 rounds, one Pepeolithic line per round, price halving down to ${amt(S.floor)} ${S.sym}.`); }
   else if (d.phase === "over") { set("pieceLbl", "PEPEOLITHIC"); set("pieceRight", ""); set("price", `${S.supply}`); set("priceSym", "minted"); set("pieceSub", "The sale is over. Leftovers, if any, are on the site."); }
-  else if (d.phase === "soldout") { set("pieceLbl", `CAVE ${d.c} · ${CAVES[d.c - 1].toUpperCase()}`); set("pieceRight", `${d.sold} of ${d.count}`); set("price", "sold out"); set("priceSym", ""); set("pieceSub", "Every Pepe in this cave is gone. The next cave opens on its own clock."); }
+  else if (d.phase === "soldout") { set("pieceLbl", `CAVE ${d.c} · ${CAVES[d.c - 1].toUpperCase()}`); set("pieceRight", `${d.sold} of ${d.count}`); set("price", "sold out"); set("priceSym", ""); set("pieceSub", "Every Pepeolithic in this cave is gone. The next cave opens on its own clock."); }
   else {
-    set("pieceLbl", `PEPE #${d.id}`); set("pieceRight", d.slot === 5 ? "the gathering" : `line ${d.slot}`);
+    set("pieceLbl", `PEPEOLITHIC #${d.id}`); set("pieceRight", d.slot === 5 ? "the gathering" : `line ${d.slot}`);
     set("price", d.price != null ? amt(d.price) : "…"); set("priceSym", S.sym);
     set("pieceSub", d.phase === "waiting" ? `Round ${d.r} opens at ${amt(d.price ?? 0n)} ${S.sym} and falls to the floor over ${clock(S.roundLen)}.` : d.phase === "line" ? `Falling to ${amt(S.floor)} ${S.sym} over this round. ${d.leftInRound} left in round ${d.r}.` : `Waiting at the floor until the cave closes. ${d.leftInRound} left in round ${d.r}.`);
   }
@@ -294,7 +294,7 @@ function render() {
   if (d.phase === "over" || d.phase === "soldout") { go.disabled = true; go.textContent = d.phase === "over" ? "SALE OVER" : "CAVE SOLD OUT"; return; }
   if (d.price == null) { go.disabled = true; go.textContent = "READING PRICE…"; return; }
   if (W.bal < d.price) { go.disabled = true; go.textContent = `NEED ${amt(d.price)} ${S.sym}`; return; }
-  go.textContent = W.allow < d.price ? `APPROVE ${S.sym}, THEN BUY #${d.id}` : `BUY PEPE #${d.id} · ${amt(d.price)} ${S.sym}`;
+  go.textContent = W.allow < d.price ? `APPROVE ${S.sym}, THEN BUY #${d.id}` : `BUY PEPEOLITHIC #${d.id} · ${amt(d.price)} ${S.sym}`;
 }
 function status(msg, cls = "") { $("status").innerHTML = msg; $("status").className = "status " + cls; }
 
@@ -363,7 +363,7 @@ async function buy(round) {
   if (!res) return;
   const mint = (res.rc.logs || []).find((l) => l.address.toLowerCase() === contract && l.topics[0] === TRANSFER && /^0x0+$/.test(l.topics[1]));
   const id = mint ? Number(hexToBigInt(mint.topics[3])) : null;
-  status(`Pepe${id != null ? " #" + id : ""} is yours. ${S.sym} went to the dead address. <a href="${CHAIN.scan}/tx/${res.hash}" target="_blank" rel="noopener">tx ↗</a>`, "ok");
+  status(`Pepeolithic${id != null ? " #" + id : ""} is yours. ${S.sym} went to the dead address. <a href="${CHAIN.scan}/tx/${res.hash}" target="_blank" rel="noopener">tx ↗</a>`, "ok");
 }
 
 /* ---------- wire up ---------- */
