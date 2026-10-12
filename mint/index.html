@@ -206,7 +206,7 @@ function derive() {
   if (!r) {
     if (rMax >= 21) { d.phase = "soldout"; d.until = d.caveClose - now; return d; }
     r = rMax + 1; d.r = r; d.rOpen = d.caveOpen + (r - 1) * S.roundLen; d.slot = 5; d.id = pieceId(c, r, 5); d.leftInRound = kOf(c, r);
-    d.phase = "waiting"; d.until = d.rOpen - now; d.price = S.opening[`${c}:${r}`] ?? null; return d;
+    d.phase = "waiting"; d.soldR = rMax; d.until = d.rOpen - now; d.price = S.opening[`${c}:${r}`] ?? null; return d;
   }
   d.r = r; d.slot = 5 - rs(r); d.id = pieceId(c, r, d.slot); d.leftInRound = kOf(c, r) - rs(r);
   d.rOpen = d.caveOpen + (r - 1) * S.roundLen; d.rFloor = d.rOpen + S.roundLen;
@@ -273,7 +273,7 @@ function render() {
   else if (d.phase === "before") { set("stTop", clock(d.until)); set("stSub", "until cave 1 opens"); }
   else if (d.phase === "over") { set("stTop", "over"); set("stSub", "the caves are closed"); }
   else if (d.phase === "soldout") { set("stTop", "sold out"); set("stSub", `next cave in ${clock(d.until)}`); }
-  else if (d.phase === "waiting") { set("stTop", clock(d.until)); set("stSub", `until round ${d.r} opens`); }
+  else if (d.phase === "waiting") { set("stTop", clock(d.until)); set("stSub", d.soldR ? `round ${d.soldR} sold · round ${d.r} opens in` : `until round ${d.r} opens`); }
   else if (d.phase === "line") { set("stTop", clock(d.until)); set("stSub", "until the floor"); }
   else { set("stTop", "at the floor"); set("stSub", `cave closes in ${clock(d.until)}`); }
 
@@ -283,11 +283,12 @@ function render() {
   else {
     set("pieceLbl", `PEPEOLITHIC #${d.id}`); set("pieceRight", d.slot === 5 ? "the gathering" : `line ${d.slot}`);
     set("price", d.price != null ? amt(d.price) : "…"); set("priceSym", S.sym);
-    set("pieceSub", d.phase === "waiting" ? `Round ${d.r} opens at ${amt(d.price ?? 0n)} ${S.sym} and falls to the floor over ${clock(S.roundLen)}.` : d.phase === "line" ? `Falling to ${amt(S.floor)} ${S.sym} over this round. ${d.leftInRound} left in round ${d.r}.` : `Waiting at the floor until the cave closes. ${d.leftInRound} left in round ${d.r}.`);
+    set("pieceSub", d.phase === "waiting" ? `${d.soldR ? `Round ${d.soldR} is sold. Come back in ${clock(d.until)}. ` : ""}Round ${d.r} opens at ${amt(d.price ?? 0n)} ${S.sym} and falls to the floor over ${clock(S.roundLen)}.` : d.phase === "line" ? `Falling to ${amt(S.floor)} ${S.sym} over this round. ${d.leftInRound} left in round ${d.r}.` : `Waiting at the floor until the cave closes. ${d.leftInRound} left in round ${d.r}.`);
   }
 
   go.disabled = false;
   if (W.busy) { go.disabled = true; return; }
+  if (d.phase === "waiting" && d.soldR) { go.disabled = true; go.textContent = `SOLD · NEXT IN ${clock(d.until)}`; return; }
   if (!W.addr) { go.textContent = "CONNECT WALLET"; return; }
   if (wrongChain) { go.textContent = `SWITCH TO ${CHAIN.name.toUpperCase()}`; return; }
   if (d.phase === "before" || d.phase === "waiting") { go.disabled = true; go.textContent = `OPENS IN ${clock(d.until)}`; return; }
