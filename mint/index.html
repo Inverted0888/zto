@@ -51,6 +51,15 @@
   .piece .big { font-size: 30px; line-height: 1.15; margin-top: 4px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .piece .big small { font-size: 13px; color: var(--chalk-dim); }
   .piece .sub { color: var(--chalk-dim); font-size: 11.5px; margin-top: 4px; }
+  .piece .meta .hot { color: var(--amber-hi); }
+  /* One chip per sale piece of the round, in the order they sell (gathering first). */
+  .chips { display: flex; gap: 6px; margin-top: 8px; }
+  .chips:empty { display: none; }
+  .chip { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 7px; padding: 2px 4px; font-size: 10px; line-height: 1.3; text-align: center; color: var(--chalk-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip b { font-weight: 400; color: var(--chalk); margin-left: 4px; }
+  .chip.sold { opacity: .5; }
+  .chip.next { border-color: var(--amber); color: var(--amber-hi); }
+  .chip.pick { border-color: var(--ochre); }
   .bar { height: 6px; border-radius: 3px; background: #2a2017; margin-top: 10px; overflow: hidden; }
   .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--ochre), var(--amber-hi)); width: 0; transition: width .6s; }
 
@@ -58,12 +67,18 @@
   .details div:nth-child(even) { text-align: right; color: var(--chalk); white-space: nowrap; }
   .details a, .status a, .fine a { color: var(--amber-hi); }
 
-  .go { margin-top: auto; width: 100%; border: 0; border-radius: 12px; padding: 14px; font: 700 15px/1 var(--mono); letter-spacing: .08em; cursor: pointer; background: var(--amber); color: #000; }
+  .go { width: 100%; border: 0; border-radius: 12px; padding: 14px; font: 700 15px/1 var(--mono); letter-spacing: .08em; cursor: pointer; background: var(--amber); color: #000; }
   .go:disabled { background: #3a2d1f; color: #8d7a63; cursor: default; }
+  .buyrow { display: flex; gap: 8px; }
+  .buyrow .go { flex: 1; min-width: 0; }
+  .qty { flex: none; display: flex; align-items: center; border: 1px solid var(--line); border-radius: 12px; background: var(--char-2); }
+  .qty button { width: 34px; align-self: stretch; background: none; border: 0; color: var(--chalk); font: 700 17px/1 var(--mono); cursor: pointer; }
+  .qty button:disabled { color: #5a4a3a; cursor: default; }
+  .qty span { min-width: 16px; text-align: center; font-weight: 700; }
   .alt { width: 100%; background: none; border: 1px solid var(--line); color: var(--chalk-dim); border-radius: 10px; padding: 9px; font: 12px var(--mono); cursor: pointer; }
   .alt:hover { border-color: var(--amber); color: var(--amber-hi); }
   .status:empty { display: none; }
-  .status:not(:empty) ~ .fine { display: none; }
+  .card:has(.status:not(:empty)) .fine { display: none; }
   .status { min-height: 18px; font-size: 11.5px; color: var(--chalk-dim); text-align: center; word-break: break-word; }
   .status.err { color: var(--red); } .status.ok { color: var(--moss); }
   .fine { color: #7d6c58; font-size: 10.5px; text-align: center; }
@@ -75,13 +90,14 @@
   .wallets small { margin-left: auto; color: var(--chalk-dim); }
 
   /* The X player frame does not scroll, so the buy widget takes over the whole card instead of opening below the fold. */
-  .getzto { display: none; position: fixed; inset: 0; z-index: 5; background: var(--char); flex-direction: column; }
-  .getzto.open { display: flex; }
-  .getzto iframe { flex: 1; width: 100%; max-width: 480px; margin: 0 auto; border: 0; display: block; min-height: 0; }
-  .getzto .back { flex: none; width: calc(100% - 24px); max-width: 456px; margin: 10px auto 6px; }
+  .getzto { display: none; width: 100%; max-width: 480px; height: min(100vh, 560px); flex-direction: column; }
+  body.getting .card { display: none; }
+  body.getting .getzto { display: flex; }
+  .getzto iframe { flex: 1; width: 100%; border: 0; display: block; min-height: 0; }
+  .getzto .back { flex: none; width: calc(100% - 32px); margin: 8px 16px 0; padding: 6px; }
   .card.picking .details, .card.picking .fine, .card.picking .alt { display: none; }
 
-  footer { display: flex; justify-content: space-between; gap: 8px; color: #7d6c58; font-size: 10.5px; flex-wrap: wrap; }
+  footer { margin-top: auto; display: flex; justify-content: space-between; gap: 8px; color: #7d6c58; font-size: 10.5px; flex-wrap: wrap; }
   footer a { color: var(--chalk-dim); text-decoration: none; border-bottom: 1px dotted #5a4a3a; }
   .hid { display: none !important; }
 </style>
@@ -98,12 +114,22 @@
     <div class="meta"><span id="pieceLbl">PEPEOLITHIC</span><span id="pieceRight"></span></div>
     <div class="big"><span id="price">…</span><small id="priceSym"></small></div>
     <div class="sub" id="pieceSub"></div>
+    <div class="chips" id="chips"></div>
     <div class="bar"><i id="bar"></i></div>
   </div>
 
+  <!-- Buttons sit above the details: on a phone the X frame is about 390x455 and does not scroll, so whatever is cut must be the small print. -->
+  <div class="wallets" id="wallets"></div>
+  <div class="buyrow">
+    <div class="qty hid" id="qty"><button type="button" id="qMinus" aria-label="one less">−</button><span id="qN">1</span><button type="button" id="qPlus" aria-label="one more">+</button></div>
+    <button class="go" id="go" type="button">CONNECT WALLET</button>
+  </div>
+  <button class="alt" id="floorBtn" type="button">BUY AN OLDER PEPEOLITHIC AT THE FLOOR</button>
+  <button class="alt" id="getBtn" type="button">NEED ZTO? GET SOME HERE</button>
+  <div class="status" id="status"></div>
+
   <div class="details">
-    <div>cave</div><div id="dCave">—</div>
-    <div>round</div><div id="dRound">—</div>
+    <div id="dCaveL">cave</div><div id="dCave">—</div>
     <div>sold this cave</div><div id="dLeft">—</div>
     <div>last sale</div><div id="dLast">—</div>
     <div id="dFloorL">at the floor</div><div id="dFloor">—</div>
@@ -111,20 +137,14 @@
     <div id="dBalL">your <span id="sym2">ZTO</span></div><div id="dBal"></div>
   </div>
 
-  <div class="wallets" id="wallets"></div>
-  <div class="getzto" id="getzto"></div>
-
-  <button class="go" id="go" type="button">CONNECT WALLET</button>
-  <button class="alt" id="floorBtn" type="button">BUY AN OLDER PEPEOLITHIC AT THE FLOOR</button>
-  <button class="alt" id="getBtn" type="button">NEED ZTO? GET SOME HERE</button>
-  <div class="status" id="status"></div>
-  <div class="fine" id="fine">Two taps: approve once, then buy. You never pay more than the price shown. A sale above the floor sets the next opening at twice it, never under half this one. Worked a seat? <a href="https://pepeolithic.sites.imd.fun/" data-ext>Claim your free Pepeolithic</a>.</div>
+  <div class="fine" id="fine">Approve once, then buy. The price only falls inside a round. Next round opens at 2× this round's last sale above the floor, never under half. Worked a seat? <a href="https://pepeolithic.sites.imd.fun/" data-ext>Claim your free Pepeolithic</a>.</div>
 
   <footer>
     <span>by the IMD swarm · use at your own risk</span>
     <span><a href="https://zto.sites.imd.fun/" data-ext>site</a> · <a id="scanLink" href="#" data-ext>contract</a> · <a href="https://x.com/ZTO_ETH" data-ext>@ZTO_ETH</a></span>
   </footer>
 </div>
+<div class="getzto" id="getzto"></div>
 
 <script type="module">
 import { encodeFunctionData, decodeFunctionResult, parseAbi, formatUnits, hexToBigInt } from "../viem.bundle.mjs";
@@ -198,8 +218,12 @@ const usdOf = (wei) => { if (!S.ztoUsd || wei == null) return ""; const n = Numb
 const approx = (wei) => { const u = usdOf(wei); return u ? ` (about ${u})` : ""; };
 // The line halves in equal steps down to the floor (the contract's _price); minutes per halving for a given opening.
 const halfMin = (opening) => { let n = 0; for (let e = opening; e > S.floor; e >>= 1n) n++; return n ? Math.max(1, Math.round(S.roundLen / n / 60)) : 0; };
-// Newest round of a cave with a sale: the piece and what it went for (a floor sale leaves lastLineSale at 0).
-const lastOf = (c, upTo) => { for (let i = upTo; i >= 1; i--) { const n = S.roundSold[`${c}:${i}`] || 0; if (n > 0) { const p = S.lastLine[`${c}:${i}`]; return { c, r: i, id: pieceId(c, i, 6 - n), price: p == null ? null : p > 0n ? p : S.floor }; } } return null; };
+// Newest round of a cave with a sale and its last sale above the floor (lastLineSale is 0 when only floor buys happened).
+// With several pieces a round the views cannot say which piece that was, so the card names the round, not a piece.
+const lastOf = (c, upTo) => { for (let i = upTo; i >= 1; i--) { const n = S.roundSold[`${c}:${i}`] || 0; if (n > 0) { const p = S.lastLine[`${c}:${i}`]; return { c, r: i, n, price: p == null ? null : p > 0n ? p : S.floor }; } } return null; };
+// Short ZTO amount for the chips: 151,136 -> 151k.
+const kz = (wei) => { const n = Number(formatUnits(wei, S.dec)); return n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : `${Math.round(n)}`; };
+const QTY = { n: 1, key: "" }; // how many to buy in one go, reset when the round on screen changes
 
 function derive() {
   const now = nowSec(), d = { now };
@@ -209,20 +233,24 @@ function derive() {
   d.c = c; d.caveOpen = S.start + (c - 1) * S.caveLen; d.caveClose = d.caveOpen + S.caveLen;
   const rs = (r) => S.roundSold[`${c}:${r}`] || 0;
   const rMax = Math.min(21, Math.floor((now - d.caveOpen) / S.roundLen) + 1);
+  const left = (i) => rs(i) < kOf(c, i);
+  // The round on screen is the live one. Leftovers of older rounds (at the floor) only take the screen after round 21,
+  // when there is no next round to count down to; otherwise they stay on the floor button.
   let r = 0;
-  for (let i = rMax; i >= 1; i--) if (rs(i) < kOf(c, i)) { r = i; break; } // newest open round with a Pepeolithic left
+  if (left(rMax)) r = rMax;
+  else if (rMax >= 21) for (let i = rMax - 1; i >= 1; i--) if (left(i)) { r = i; break; }
   d.floorLeft = 0; d.floorR = null;
-  for (let i = 1; i < (r || rMax + 1); i++) if (rs(i) < kOf(c, i) && now >= d.caveOpen + i * S.roundLen) { d.floorLeft += kOf(c, i) - rs(i); if (d.floorR == null) d.floorR = i; }
+  for (let i = 1; i <= rMax; i++) if (i !== r && left(i) && now >= d.caveOpen + i * S.roundLen) { d.floorLeft += kOf(c, i) - rs(i); if (d.floorR == null) d.floorR = i; }
   d.floor = S.floor;
   let sold = 0, count = 0; for (let i = 1; i <= 21; i++) { sold += rs(i); count += kOf(c, i); }
   d.sold = sold; d.count = count;
   d.last = lastOf(c, 21) || S.prev[c - 1] || null;
   if (!r) {
     if (rMax >= 21) { d.phase = "soldout"; d.until = d.caveClose - now; return d; }
-    r = rMax + 1; d.r = r; d.rOpen = d.caveOpen + (r - 1) * S.roundLen; d.slot = 5; d.id = pieceId(c, r, 5); d.leftInRound = kOf(c, r);
+    r = rMax + 1; d.r = r; d.rOpen = d.caveOpen + (r - 1) * S.roundLen; d.slot = 5; d.id = pieceId(c, r, 5); d.k = kOf(c, r); d.soldInRound = 0; d.leftInRound = d.k;
     d.phase = "waiting"; d.soldR = rMax; d.until = d.rOpen - now; d.price = S.opening[`${c}:${r}`] ?? null; return d;
   }
-  d.r = r; d.slot = 5 - rs(r); d.id = pieceId(c, r, d.slot); d.leftInRound = kOf(c, r) - rs(r);
+  d.r = r; d.slot = 5 - rs(r); d.id = pieceId(c, r, d.slot); d.k = kOf(c, r); d.soldInRound = rs(r); d.leftInRound = d.k - rs(r);
   d.rOpen = d.caveOpen + (r - 1) * S.roundLen; d.rFloor = d.rOpen + S.roundLen;
   const live = S.priceNow[`${c}:${r}`];
   if (now < d.rOpen) { d.phase = "waiting"; d.until = d.rOpen - now; d.price = S.opening[`${c}:${r}`] ?? null; }
@@ -277,17 +305,45 @@ function render() {
   fb.classList.toggle("hid", !(d.floorLeft > 0));
   const set = (id, v) => { $(id).textContent = v; };
   set("dCave", d.c ? `${d.c} of 7 · ${CAVES[d.c - 1]}` : "—");
-  set("dRound", d.r ? `${d.r} of 21 · ${d.leftInRound} left` : "—");
+  for (const id of ["dCaveL", "dCave"]) $(id).classList.toggle("hid", d.k > 1); // the round label names the cave when there are chips to make room for
   set("dLeft", d.c ? `${d.sold} of ${d.count}` : "—");
-  const L = d.last, lastTxt = L ? `#${L.id}${L.price != null ? ` · ${amt(L.price)} ${S.sym}${usdOf(L.price) ? " · " + usdOf(L.price) : ""}` : ""}` : "";
-  set("dLast", L ? lastTxt : d.c ? "none yet" : "—");
-  const lastLine = L && L.price != null ? `${L.c === d.c ? `Round ${L.r}` : `#${L.id}`} sold for ${amt(L.price)} ${S.sym}${approx(L.price)}. ` : "";
+  const L = d.last, where = L ? (L.c === d.c ? `round ${L.r}` : `cave ${L.c} · round ${L.r}`) : "";
+  set("dLast", L ? `${where}${L.price != null ? ` · ${amt(L.price)} ${S.sym}${usdOf(L.price) ? " · " + usdOf(L.price) : ""}` : ""}` : d.c ? "none yet" : "—");
+  const lastLine = L && L.price != null ? `Last sale ${amt(L.price)} ${S.sym}${approx(L.price)}${L.c === d.c ? "" : `, cave ${L.c}`}. ` : "";
   set("dFloor", d.floorLeft > 0 ? `${d.floorLeft} waiting · ${amt(d.floor)} ${S.sym}` : "none");
   set("dMinted", S.ok ? `${S.supply} of 737` : "—");
   set("dBal", W.addr ? `${amt(W.bal)} ${S.sym}` : "");
   for (const id of ["dFloorL", "dFloor"]) $(id).classList.toggle("hid", !(d.floorLeft > 0)); // rows that say nothing stay out: the X frame is 560 tall and does not scroll
   for (const id of ["dBalL", "dBal"]) $(id).classList.toggle("hid", !W.addr);
   $("bar").style.width = `${d.pct ?? 0}%`;
+
+  // How many the buyer can take in one go: what is left in the round on screen (the floor button stays one at a time).
+  const live = d.phase === "line" || d.phase === "floor";
+  const key = `${d.c}:${d.r}:${d.phase}`;
+  if (QTY.key !== key) { QTY.key = key; QTY.n = 1; }
+  d.maxQty = live && d.price != null ? d.leftInRound : 1;
+  if (W.addr && d.price > 0n && W.bal >= d.price) d.maxQty = Math.min(d.maxQty, Number(W.bal / d.price)); // never offer more than the wallet can pay for
+  if (QTY.n > d.maxQty) QTY.n = Math.max(1, d.maxQty);
+  const n = QTY.n, total = d.price != null ? d.price * BigInt(n) : null;
+  $("qty").classList.toggle("hid", !(W.addr && !wrongChain && d.maxQty > 1));
+  set("qN", String(n)); $("qMinus").disabled = W.busy || n <= 1; $("qPlus").disabled = W.busy || n >= d.maxQty;
+
+  // Chips: every sale piece of the round on screen, in the order they sell.
+  const chips = $("chips"); chips.innerHTML = "";
+  if (d.r && d.k > 1 && (live || d.phase === "waiting")) {
+    for (let j = 0; j < d.k; j++) {
+      const slot = 5 - j, el = document.createElement("div");
+      const sold = j < d.soldInRound, isNext = j === d.soldInRound && live, picked = live && j > d.soldInRound && j < d.soldInRound + n;
+      el.className = "chip" + (sold ? " sold" : isNext ? " next" : picked ? " pick" : "");
+      // lastLineSale belongs to the newest above-floor sale, which is the last one sold while the line runs.
+      const lastSold = sold && j === d.soldInRound - 1 && d.phase === "line" && S.lastLine[`${d.c}:${d.r}`] > 0n;
+      const b = document.createElement("b");
+      b.textContent = sold ? (lastSold ? kz(S.lastLine[`${d.c}:${d.r}`]) : "sold") : isNext || picked ? (d.price != null ? kz(d.price) : "…") : "open";
+      el.append(d.k >= 4 ? (slot === 5 ? "gath." : `L${slot}`) : slot === 5 ? "gathering" : `line ${slot}`, b);
+      el.title = `#${pieceId(d.c, d.r, slot)}`;
+      chips.appendChild(el);
+    }
+  }
 
   if (!LIVE) {
     set("stTop", CONFIG.start ? clock(Math.max(0, CONFIG.start - d.now)) : "soon"); set("stSub", CONFIG.start ? "until cave 1 opens" : CONFIG.dateLine);
@@ -302,17 +358,19 @@ function render() {
   else if (d.phase === "line") { set("stTop", clock(d.until)); set("stSub", "until the floor"); }
   else { set("stTop", "at the floor"); set("stSub", `cave closes in ${clock(d.until)}`); }
 
-  if (d.phase === "before") { set("pieceLbl", "CAVE 1 · BASE"); set("pieceRight", ""); set("price", "—"); set("pieceSub", `Opens ${et(S.start)}. 21 rounds, one Pepeolithic line per round, price halving down to ${amt(S.floor)} ${S.sym}.`); }
+  const right = $("pieceRight"); right.classList.toggle("hot", d.k > 1 && live);
+  if (d.phase === "before") { set("pieceLbl", "CAVE 1 · BASE"); set("pieceRight", ""); set("price", "—"); set("pieceSub", `Opens ${et(S.start)}. 21 rounds, one an hour, price halving down to ${amt(S.floor)} ${S.sym}.`); }
   else if (d.phase === "over") { set("pieceLbl", "PEPEOLITHIC"); set("pieceRight", ""); set("price", `${S.supply}`); set("priceSym", "minted"); set("pieceSub", "The sale is over. Leftovers, if any, are on the site."); }
   else if (d.phase === "soldout") { set("pieceLbl", `CAVE ${d.c} · ${CAVES[d.c - 1].toUpperCase()}`); set("pieceRight", `${d.sold} of ${d.count}`); set("price", "sold out"); set("priceSym", ""); set("pieceSub", `Every Pepeolithic in this cave is gone. ${L && L.price != null ? `The last one went for ${amt(L.price)} ${S.sym}${approx(L.price)}. ` : ""}The next cave opens on its own clock.`); }
   else {
-    set("pieceLbl", `PEPEOLITHIC #${d.id}`); set("pieceRight", d.slot === 5 ? "the gathering" : `line ${d.slot}`);
-    set("price", d.price != null ? amt(d.price) : "…"); set("priceSym", S.sym + (d.price != null && usdOf(d.price) ? ` · about ${usdOf(d.price)}` : ""));
+    if (d.k > 1) { set("pieceLbl", `${CAVES[d.c - 1].toUpperCase()} · ROUND ${d.r}/21`); set("pieceRight", d.phase === "waiting" ? `${d.k} ON THE WALL` : `${d.leftInRound} OF ${d.k} LEFT`); }
+    else { set("pieceLbl", `PEPEOLITHIC #${d.id}`); set("pieceRight", d.slot === 5 ? "the gathering" : `line ${d.slot}`); }
+    set("price", d.price != null ? amt(d.price) : "…"); set("priceSym", S.sym + (d.k > 1 ? " each" : "") + (d.price != null && usdOf(d.price) ? ` · about ${usdOf(d.price)}` : ""));
     const op = S.opening[`${d.c}:${d.r}`], hm = op ? halfMin(op) : 0, falls = hm ? `halves about every ${hm} min down to ${amt(S.floor)} ${S.sym}` : `falls to ${amt(S.floor)} ${S.sym} within the hour`;
     const twice = L && L.c === d.c && L.price != null && d.price === 2n * L.price ? ", twice that," : "";
     set("pieceSub", d.phase === "waiting" ? (d.price != null ? `${lastLine}Round ${d.r} opens at ${amt(d.price)} ${S.sym}${twice} and ${falls}.` : `${lastLine}Round ${d.r} opens in ${clock(d.until)}.`)
-      : d.phase === "line" ? `${lastLine}This one ${falls}. ${d.leftInRound} left in round ${d.r}.`
-      : `${lastLine}Waiting at the floor until the cave closes. ${d.leftInRound} left in round ${d.r}.`);
+      : d.phase === "line" ? (d.k > 1 ? `${lastLine}${d.leftInRound > 1 ? `Same price for all ${d.leftInRound}, ` : "Last one this round, "}${falls.replace(" down to", " to")}.` : `${lastLine}This one ${falls}.`)
+      : `${lastLine}Waiting at the floor until the cave closes.`);
   }
 
   go.disabled = false;
@@ -324,8 +382,10 @@ function render() {
   if (d.phase === "before" || d.phase === "waiting") { go.disabled = true; go.textContent = `OPENS IN ${clock(d.until)}`; return; }
   if (d.phase === "over" || d.phase === "soldout") { go.disabled = true; go.textContent = d.phase === "over" ? "SALE OVER" : "CAVE SOLD OUT"; return; }
   if (d.price == null) { go.disabled = true; go.textContent = "READING PRICE…"; return; }
-  if (W.bal < d.price) { go.disabled = true; go.textContent = `NEED ${amt(d.price)} ${S.sym}`; return; }
-  go.textContent = W.allow < d.price ? `APPROVE ${S.sym}, THEN BUY #${d.id}` : `BUY PEPEOLITHIC #${d.id} · ${amt(d.price)} ${S.sym}`;
+  if (W.bal < total) { go.disabled = true; go.textContent = `NEED ${amt(total)} ${S.sym}`; return; }
+  // A single piece is only certain when it is the last one of the round; otherwise a faster buyer can take that number first.
+  const what = n > 1 ? `${n} · ~${amt(total)} ${S.sym}` : d.leftInRound === 1 ? `#${d.id} · ${amt(d.price)} ${S.sym}` : `1 OF ${d.leftInRound} · ${amt(d.price)} ${S.sym}`;
+  go.textContent = W.allow < total ? `APPROVE ${S.sym}, THEN BUY ${n > 1 ? n : d.leftInRound === 1 ? "#" + d.id : "1"}` : `BUY ${what}`;
 }
 function status(msg, cls = "") { $("status").innerHTML = msg; $("status").className = "status " + cls; }
 
@@ -385,16 +445,83 @@ async function send(to, data, label) {
     status(/reject|denied|cancel/i.test(m) ? "cancelled in wallet" : m.slice(0, 160), "err"); return null;
   } finally { W.busy = false; await readChain(); }
 }
+const mintsOf = (rc) => (rc?.logs || []).filter((l) => l.address.toLowerCase() === contract && l.topics[0] === TRANSFER && /^0x0+$/.test(l.topics[1])).map((l) => Number(hexToBigInt(l.topics[3])));
+const txLink = (hash) => `<a href="${CHAIN.scan}/tx/${hash}" target="_blank" rel="noopener">tx ↗</a>`;
+const waitReceipt = async (hash) => { for (let i = 0; i < 120; i++) { const rc = await rpc("eth_getTransactionReceipt", [hash]).catch(() => null); if (rc) return rc; await new Promise((r) => setTimeout(r, 3000)); } return null; };
+const rejected = (e) => /reject|denied|cancel/i.test(e?.shortMessage || e?.message || "") || e?.code === 4001;
+// EIP-5792: one confirm for approve + every buy, but only on wallets that already batch on this chain (no "upgrade your account" prompt).
+const batchOk = {};
+async function canBatch() {
+  if (W.addr in batchOk) return batchOk[W.addr];
+  let ok = false;
+  try {
+    const caps = await W.provider.request({ method: "wallet_getCapabilities", params: [W.addr, [CHAIN.hex]] });
+    const c = caps?.[CHAIN.hex] || caps?.[String(CHAIN.id)] || {};
+    ok = c.atomic?.status === "supported" || c.atomicBatch?.supported === true;
+  } catch {}
+  return (batchOk[W.addr] = ok);
+}
+async function sendBatch(list, n) {
+  $("go").textContent = `BUY ${n}: CONFIRM IN WALLET…`;
+  const res = await W.provider.request({ method: "wallet_sendCalls", params: [{ version: "2.0.0", chainId: CHAIN.hex, from: W.addr, atomicRequired: false, calls: list.map(([to, data]) => ({ to, data, value: "0x0" })) }] });
+  const id = typeof res === "string" ? res : res?.id;
+  $("go").textContent = `BUY ${n}: PENDING…`; status(`${n} buys sent as one batch`);
+  for (let i = 0; i < 120; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const st = await W.provider.request({ method: "wallet_getCallsStatus", params: [id] }).catch(() => null);
+    const code = st?.status;
+    if (code === 100 || code === "PENDING" || !st) continue;
+    return (st.receipts || []).map((rc) => ({ hash: rc.transactionHash, rc: { ...rc, status: rc.status === "0x1" || rc.status === 1 || rc.status === "success" ? "0x1" : "0x0" } }));
+  }
+  return null;
+}
 async function buy(round) {
   const d = derive();
   const r = round ?? d.r, price = round ? d.floor : d.price;
   if (!r || price == null) return;
-  if (W.allow < price) { const ok = await send(S.coin, enc("approve", [contract, (1n << 256n) - 1n]), `Approve ${S.sym}`); if (!ok) return; }
-  const res = await send(contract, enc("buy", [BigInt(d.c), BigInt(r)]), "Buy");
-  if (!res) return;
-  const mint = (res.rc.logs || []).find((l) => l.address.toLowerCase() === contract && l.topics[0] === TRANSFER && /^0x0+$/.test(l.topics[1]));
-  const id = mint ? Number(hexToBigInt(mint.topics[3])) : null;
-  status(`Pepeolithic${id != null ? " #" + id : ""} is yours. ${S.sym} went to the dead address. <a href="${CHAIN.scan}/tx/${res.hash}" target="_blank" rel="noopener">tx ↗</a>`, "ok");
+  const n = round ? 1 : Math.max(1, Math.min(QTY.n, d.leftInRound || 1));
+  if (n === 1) { // the original path, unchanged
+    if (W.allow < price) { const ok = await send(S.coin, enc("approve", [contract, (1n << 256n) - 1n]), `Approve ${S.sym}`); if (!ok) return; }
+    const res = await send(contract, enc("buy", [BigInt(d.c), BigInt(r)]), "Buy");
+    if (!res) return;
+    const id = mintsOf(res.rc)[0];
+    status(`Pepeolithic${id != null ? " #" + id : ""} is yours. ${S.sym} went to the dead address. ${txLink(res.hash)}`, "ok");
+    return;
+  }
+  const buyData = enc("buy", [BigInt(d.c), BigInt(r)]);
+  const needApprove = W.allow < price * BigInt(n);
+  W.busy = true; render();
+  let done = [];
+  try {
+    let batched = false;
+    if (await canBatch()) {
+      const list = [...(needApprove ? [[S.coin, enc("approve", [contract, (1n << 256n) - 1n])]] : []), ...Array.from({ length: n }, () => [contract, buyData])];
+      try { done = await sendBatch(list, n); batched = true; }
+      catch (e) { if (rejected(e)) throw e; batchOk[W.addr] = false; } // the wallet said it batches but refused: do it one by one
+      if (batched && done == null) { status("the batch is still pending, check your wallet", "err"); return; }
+      if (batched && !done.length) { status("the wallet did not send the batch. Nothing was bought.", "err"); return; }
+    }
+    if (!batched) {
+      if (needApprove) { W.busy = false; const ok = await send(S.coin, enc("approve", [contract, (1n << 256n) - 1n]), `Approve ${S.sym}`); if (!ok) return; W.busy = true; render(); }
+      // One confirm per piece, sent back to back; receipts are awaited together so the round cannot run away between taps.
+      const hashes = [];
+      for (let i = 0; i < n; i++) {
+        $("go").textContent = `BUY ${i + 1} OF ${n}: CONFIRM IN WALLET…`;
+        try { hashes.push(await W.provider.request({ method: "eth_sendTransaction", params: [{ from: W.addr, to: contract, data: buyData }] })); }
+        catch (e) { if (!hashes.length) throw e; break; } // a later "no" keeps the ones already sent
+      }
+      $("go").textContent = `BUY ${hashes.length}: PENDING…`; status(`${hashes.length} buys sent`);
+      done = await Promise.all(hashes.map(async (hash) => ({ hash, rc: await waitReceipt(hash) })));
+    }
+    const ids = done.flatMap((x) => x.rc?.status === "0x1" ? mintsOf(x.rc) : []);
+    const failed = done.filter((x) => x.rc && x.rc.status !== "0x1").length, pending = done.filter((x) => !x.rc).length;
+    const links = done.map((x) => txLink(x.hash)).filter((v, i, a) => a.indexOf(v) === i).slice(0, 4).join(" ");
+    const msg = ids.length ? `Pepeolithic ${ids.map((i) => "#" + i).join(", ")} ${ids.length > 1 ? "are" : "is"} yours. ${S.sym} went to the dead address.` : batched && failed ? "Nothing bought." : "Nothing minted.";
+    const extra = batched && !ids.length && failed ? " Someone took a piece first, so the whole batch reverted and nothing was charged but gas. Try fewer." : (failed ? ` ${failed} reverted (someone got there first).` : "") + (pending ? ` ${pending} still pending.` : "");
+    status(`${msg}${extra} ${links}`, ids.length ? "ok" : "err");
+  } catch (e) {
+    status(rejected(e) ? "cancelled in wallet" : (e?.shortMessage || e?.message || "failed").slice(0, 160), "err");
+  } finally { W.busy = false; QTY.n = 1; await readChain(); }
 }
 
 /* ---------- wire up ---------- */
@@ -404,6 +531,8 @@ $("go").onclick = () => {
   if (W.chainId !== CHAIN.id) return switchChain();
   buy();
 };
+$("qMinus").onclick = () => { QTY.n = Math.max(1, QTY.n - 1); render(); };
+$("qPlus").onclick = () => { const d = derive(); QTY.n = Math.min(QTY.n + 1, Math.max(1, d.leftInRound || 1)); render(); };
 $("floorBtn").onclick = () => { const d = derive(); if (!W.addr) { pick(true); return; } if (d.floorR) buy(d.floorR); };
 $("getBtn").onclick = () => {
   const g = $("getzto"), d = derive();
@@ -412,9 +541,9 @@ $("getBtn").onclick = () => {
   const eth = short && S.ztoUsd && S.ethUsd ? Math.max(0.005, Math.ceil(Number(formatUnits(short, S.dec)) * S.ztoUsd / S.ethUsd * 1.1 * 1000) / 1000) : 0.05;
   g.innerHTML = "";
   const b = document.createElement("button"); b.type = "button"; b.className = "alt back"; b.textContent = "← BACK TO THE MINT";
-  b.onclick = () => { g.classList.remove("open"); g.innerHTML = ""; readChain(); };
-  const f = document.createElement("iframe"); f.src = `../?eth=${eth}`; f.title = "Buy $ZTO";
-  g.append(b, f); g.classList.add("open");
+  b.onclick = () => { document.body.classList.remove("getting"); g.innerHTML = ""; readChain(); };
+  const f = document.createElement("iframe"); f.src = `../?compact=1&eth=${eth}`; f.title = "Buy $ZTO";
+  g.append(b, f); document.body.classList.add("getting"); window.scrollTo(0, 0);
 };
 async function loadUsd() { // DexScreener, the same source as the buy widget; the card works without it
   try {
